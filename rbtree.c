@@ -1,5 +1,5 @@
 /**
- * red black tree implementation
+ * Red Black Tree implementation
  * 
  * Ben Raivel
  */
@@ -26,24 +26,22 @@ RBNode* RBNode_create(unsigned long key){
 bool is_lchild(RBNode* node){
     
     // check if node is the left child of it's parent
-    if(node->parent->lchild == node){
+    if(node->parent->lchild == node)
         return true; // node is the left child
-    }
-    else{ // otherwise
+
+    else // otherwise
         return false; // node is not the left child
-    }
 }
 
 // gets the uncle
 RBNode* get_uncle(RBNode* node){
 
     // if node's parent is a left child
-    if(is_lchild(node->parent)){
+    if(is_lchild(node->parent))
         return node->parent->parent->rchild; // uncle is a right child
-    }
-    else{ // otherwise
+
+    else // otherwise
         return node->parent->parent->lchild; // uncle is a left child
-    }
 }
 
 // creates an empty RBTree, returns pointer
@@ -77,12 +75,11 @@ void RBTree_insert(RBTree* T, unsigned long key){
     RBNode* new_node = RBNode_create(key);
 
     // if key is lower than min_vruntime
-    if(T->min_vruntime == T->nil){
+    if(T->min_vruntime == T->nil)
         T->min_vruntime = new_node;
-    }
-    else if(key < T->min_vruntime->key){
+
+    else if(key < T->min_vruntime->key)
         T->min_vruntime = new_node; // update min_vruntime
-    }
 
     // Starting at the root
     RBNode* current = T->root;
@@ -94,27 +91,27 @@ void RBTree_insert(RBTree* T, unsigned long key){
         prev = current; // update prev to current
         
         // compare keys
-        if(new_node->key < current->key){
+        if(new_node->key < current->key)
             current = current->lchild; // new_node belongs on current's left
-        }
-        else{
+        
+        else
             current = current->rchild; // new_node belongs on current's right
-        }
     }
+
     // prev becomes parent of new_node
     new_node->parent = prev;
 
     // special case: tree is empty
-    if(prev == T->nil){
+    if(prev == T->nil)
         T->root = new_node; // new_node becomes the root
-    }
+
     else{ // tree is not empty, compare keys
-        if(new_node->key < prev->key){
+
+        if(new_node->key < prev->key)
             prev->lchild = new_node; // new_node is left child
-        }
-        else{      
+
+        else   
             prev->rchild = new_node; // new_node is right child
-        }
     }
 
     // set new_node's children to be nil
@@ -201,27 +198,27 @@ unsigned long RBTree_remove(RBTree* T, unsigned long key){
     }
 
     // two temporary node pointers
-    RBNode* t1 = node;
-    RBNode* t2;
+    RBNode* t1 = node; // in cases 1 & 2 t1 is the removed node
+    bool t1_orig_red = t1->red; // store original color of t1
+    RBNode* t2; // t2 tracks the node replacing t1
 
-    // is t1 red?
-    bool t1_is_red = t1->red;
+    // Three Cases: //
 
-    // if node's left child is nil
+    // 1 - node has right child
     if(node->lchild == T->nil){
         t2 = node->rchild;
         transplant(T, node, node->rchild);
     }
 
-    // if node's right child is nil
+    // 2 - node has left child
     else if(node->rchild == T->nil){
         t2 = node->lchild;
         transplant(T, node, node->lchild);
     }
-    
-    else{
+
+    else{ // 3 - node has two children
         t1 = RBTree_min(T, node->rchild);
-        t1_is_red = t1->red;
+        t1_orig_red = t1->red;
         t2 = t1->rchild;
 
         if(t1->parent == node)
@@ -235,13 +232,14 @@ unsigned long RBTree_remove(RBTree* T, unsigned long key){
         t1->lchild = node->lchild;
         t1->lchild->parent = t1;
 
+        // recolor t1 to match node
         if(node->red)
             t1->red = true;
         else
             t1->red = false;
     }
 
-    if(!t1_is_red)
+    if(!t1_orig_red)
         remove_fixup(T, t2);
 
     // temp variable to hold key
